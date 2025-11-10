@@ -1,0 +1,88 @@
+# CST1500CW2 
+# Navid Zarei
+# Round Robin ( CPU Algorithm)
+
+
+# define my variables
+# user inputs for number of processes, burst times, arrival times, and time quantum
+num_processes = int(input("Enter number of processes: "))
+process_id = []
+burst_time = []
+arrival_time = []
+
+
+# get burst times for each process
+for i in range (num_processes):
+    process_id.append(i + 1)
+    bt = int(input(f"Enter burst time for process {i + 1}: "))
+    burst_time.append(bt)
+    arrival_time.append(0)  # assuming all processes arrive at time 0 for simplicity
+
+
+
+# see if user wants to set time quantum or use default
+time_quantum = 2
+choice_q = input("Do you want to set time quantum? (y/n): ").lower()
+if choice_q == 'y':
+    time_quantum = int(input("Enter your desired time quantum: "))
+else:
+    print(f"Default time quantum of {time_quantum} will be used.")
+
+
+
+# see if user wants to set arrival times or use default
+choice = input("Do you want to set arrival time? (y/n): ").lower()
+if choice == 'y':
+    arrival_time = []
+    for i in range(num_processes):
+        at = int(input(f"Enter arrival time for process {i + 1}: "))
+        arrival_time.append(at)
+else:
+    arrival_time = [0] * num_processes
+
+
+
+
+# main logic for Round Robin scheduling
+remaining_time = burst_time.copy()
+completion_time = [0] * num_processes
+current_time = 0 
+
+
+# main loop for Round Robin scheduling
+while True:
+    all_done = True # assume all processes are done unless found otherwise
+    for i in range(num_processes):
+        if remaining_time[i] > 0:
+            all_done = False # found a process that is not done
+
+            if remaining_time[i] > time_quantum:
+                current_time += time_quantum
+                remaining_time[i] -= time_quantum
+            else:
+                current_time += remaining_time[i]
+                completion_time[i] = current_time
+                remaining_time[i] = 0
+    if all_done:
+        break
+
+
+# calculate turnaround time and waiting time
+turnaround_time = [0] * num_processes
+waiting_time = [0] * num_processes
+
+for i in range(num_processes):
+    turnaround_time[i] = completion_time[i] - arrival_time[i]
+    waiting_time[i] = turnaround_time[i] - burst_time[i]
+
+average_tat = sum(turnaround_time) / num_processes
+average_wt = sum(waiting_time) / num_processes
+
+# print results using loop
+print("\nProcess\tAT\tBT\tCT\tTAT\tWT")
+for i in range(num_processes):
+    print(f"{process_id[i]}\t{arrival_time[i]}\t{burst_time[i]}\t{completion_time[i]}\t{turnaround_time[i]}\t{waiting_time[i]}")
+
+print(f"\nAverage Turnaround Time: {average_tat:.2f}")
+print(f"Average Waiting Time: {average_wt:.2f}")
+# end of code
