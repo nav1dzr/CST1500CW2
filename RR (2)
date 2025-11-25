@@ -3,8 +3,9 @@ import time
 
 
 
+
 # Process Class
-class Process:  #This Process class stores all information about one single process. out other classes will use this to manage processes.
+class Process:  #This Process class stores all information about one single process. other classes will use this to manage processes.
     def __init__(self, pid, burst_time, arrival_time=0):
         self.pid = pid
         self.burst_time = burst_time
@@ -19,7 +20,6 @@ class Process:  #This Process class stores all information about one single proc
 
 class RRScheduler:  #This class manages our Round Robin scheduling logic.
 
-
     def __init__(self, quantum):
         self.processes = [] # to store all processes
         self.quantum = quantum 
@@ -28,7 +28,6 @@ class RRScheduler:  #This class manages our Round Robin scheduling logic.
     def add_process(self, pid, burst, arrival): # to add a process to the scheduler
         self.processes.append(Process(pid, burst, arrival)) # adding a new process object to the list
 
-    
 
     # CORRECT RR CALCULATION
     def calculate_times(self):
@@ -36,9 +35,6 @@ class RRScheduler:  #This class manages our Round Robin scheduling logic.
         queue = [] # ready queue
         processes = sorted(self.processes, key=lambda p: p.arrival_time) # sort by arrival time
         remaining = processes.copy() # processes yet to arrive or complete
-
-
-
 
         # Add first arrivals
         while remaining and remaining[0].arrival_time <= time_now: # check for arrivals at time 0 bc we already sorted we start from index 0
@@ -51,52 +47,54 @@ class RRScheduler:  #This class manages our Round Robin scheduling logic.
             queue.append(remaining.pop(0)) #add that first process to the queue
 
         # RR loop
-        while queue:
+        while queue: # as long as there are/is processes in the queue
             p = queue.pop(0) 
 
-            run_time = min(self.quantum, p.remaining_time) # determine how much time to run this process
-            time_now += run_time
+            run_time = min(self.quantum, p.remaining_time) # decides how much time to run this process (whcih is smaller)
+            time_now += run_time #move our cpu clock forward
             p.remaining_time -= run_time
 
             # Add newly arrived processes
             while remaining and remaining[0].arrival_time <= time_now:
-                queue.append(remaining.pop(0))
+                queue.append(remaining.pop(0)) # if new processes have arrived during this time slice, add them to the queue
+                                                # if not while loop will not run.
 
             # If process still needs CPU
             if p.remaining_time > 0:
                 queue.append(p)
             else:
-                p.finish_time = time_now
+                p.finish_time = time_now #later we needthis to caluclate TAT and WT
 
         # Calculate WT + TAT
-        for p in self.processes:
+        for p in self.processes: #loop through all processes to calculate their WT and TAT
             p.turnaround_time = p.finish_time - p.arrival_time
             p.waiting_time = p.turnaround_time - p.burst_time
+ 
 
-    # -----------------------------
     # THREAD SIMULATION
-    # -----------------------------
-    def run_in_thread(self):
+    def run_in_thread(self): #This method is NOT for real scheduling
         print("\nSimulating Round Robin execution:\n")
-        for p in sorted(self.processes, key=lambda p: p.pid):
-            print(f"Process {p.pid} executed in slices...")
-            time.sleep(0.2)
+        for p in sorted(self.processes, key=lambda p: p.pid): # just to display in order of process id and not changing the actual scheduling logic
+            print(f"Process {p.pid} executed in slices...") #This is not real slice execution — it is visual simulation.
+            time.sleep(0.2) # simulate time delay for visualization and user experience, Without this, the simulation would finish instantly.
         print("\nExecution finished.\n")
 
-    # -----------------------------
+
     # DISPLAY RESULTS
-    # -----------------------------
+
     def display_results(self):
-        print("PID | AT | BT | WT | TAT")
-        print("-------------------------")
+        print("Process ID   | Arrival Time  | Burst Time   | Waiting Time   | Turnaround Time")
+        print("-------------------------------------------------------------------------------")
+
         total_wait = 0
         total_turn = 0
 
         for p in self.processes:
             total_wait += p.waiting_time
             total_turn += p.turnaround_time
-            print(f"{p.pid:3} | {p.arrival_time:2} | {p.burst_time:2} | "
-                  f"{p.waiting_time:2} | {p.turnaround_time:3}")
+            print(f"{p.pid:<13}| {p.arrival_time:<14}| {p.burst_time:<13}| {p.waiting_time:<15}| {p.turnaround_time:<16}")
+
+
 
         n = len(self.processes)
         print("\nAverage Waiting Time:", round(total_wait / n, 2))
@@ -107,19 +105,19 @@ class RRScheduler:  #This class manages our Round Robin scheduling logic.
 # Main Program
 # -----------------------------
 def main():
-    print("----- Round Robin Scheduler (Correct + Threads) -----")
+    print("----- Round Robin Scheduler  -----")
 
     n = int(input("Enter number of processes: "))
     quantum = int(input("Enter time quantum: "))
 
     # validate arrival time choice
-    while True:
+    while True: #if user enters invalid input we keep asking
         choice = input("Do you want to enter arrival times? (y/n): ").lower().strip()
         if choice in ['y', 'n']:
             break
         print("Invalid input. Please enter 'y' or 'n'.")
 
-    scheduler = RRScheduler(quantum)
+    scheduler = RRScheduler(quantum) # create scheduler object
 
     for i in range(n):
         pid = i + 1
@@ -136,7 +134,7 @@ def main():
     t.start()
     t.join()
 
-    scheduler.display_results()
+    scheduler.display_results() # running the display function to show results
 
 
 if __name__ == "__main__":
