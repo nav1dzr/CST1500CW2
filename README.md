@@ -38,4 +38,6 @@ These programs simulate how an operating system schedules processes and calculat
 ---
 
 ## 📁 Files Included
-
+- RR (simple version)
+- RR (complex Version using class and threads)
+- FCFS
